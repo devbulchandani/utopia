@@ -8,7 +8,7 @@ export async function fetchEvents() {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching events:", error);
+    console.error("Error fetching events:", error.message); // Log only the message
     throw new Error("Failed to fetch events. Please try again later.");
   }
 }
@@ -21,7 +21,7 @@ export async function fetchEventById(id: string) {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching event:", error);
+    console.error("Error fetching event:", error.message); // Log only the message
     throw new Error("Failed to fetch event details. Please try again later.");
   }
 }
@@ -40,7 +40,7 @@ export async function createEvent(eventData: FormData) {
 
     return await response.json();
   } catch (error) {
-    console.error("Error creating event:", error);
+    console.error("Error creating event:", error.message); // Log only the message
     throw error;
   }
 }
@@ -59,7 +59,7 @@ export async function updateEvent(id: string, eventData: FormData) {
 
     return await response.json();
   } catch (error) {
-    console.error("Error updating event:", error);
+    console.error("Error updating event:", error.message); // Log only the message
     throw error;
   }
 }
@@ -75,7 +75,7 @@ export async function deleteEvent(id: string) {
       throw new Error(errorData.error || "Failed to delete event");
     }
   } catch (error) {
-    console.error("Error deleting event:", error);
+    console.error("Error deleting event:", error.message); // Log only the message
     throw error;
   }
 }
@@ -103,7 +103,7 @@ export async function purchaseTickets(ticketData: {
 
     return await response.json();
   } catch (error) {
-    console.error("Error purchasing tickets:", error);
+    console.error("Error purchasing tickets:", error.message); // Log only the message
     throw error;
   }
 }

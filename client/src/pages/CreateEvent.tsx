@@ -23,7 +23,7 @@ export interface Event {
   date: Date;
   location: string;
   price: number;
-  imageUrl: string;
+  imageUrl: BinaryData;
   category: string;
   tickets: { available: number; total: number };
   organizer: { name: string; contact: string };
@@ -228,7 +228,7 @@ export default function CreateEvent() {
         if (key === "image" && value) {
           formDataToSend.append("image", value);
         } else if (value) {
-          formDataToSend.append(key, value);
+          formDataToSend.append(key, value.toString());
           console.log(JSON.stringify(formDataToSend));
         }
       });
@@ -402,8 +402,8 @@ export default function CreateEvent() {
                     ) : (
                       <div className="space-y-[5px] text-center">
                         <Upload className="mx-auto h-[40px] w-[40px] text-white" />
-                        <div className="flex text-sm text-white">
-                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-black hover:text-white focus-within:outline-none">
+                        <div className="flex text-sm text-white justify-center ">
+                          <label className="relative cursor-pointer p-2 bg-white rounded-md font-medium text-black hover:bg-cream-300 focus-within:outline-none">
                             <span>Upload a file</span>
                             <input
                               type="file"

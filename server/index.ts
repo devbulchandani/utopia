@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/auth";
+import eventRoutes from "./routes/event"
 
 
 
@@ -21,7 +22,7 @@ connectDB();
 app.get("/", (req, res) => {
   res.send("Hello, TypeScript!");
 });
-
+app.use("/api/events", eventRoutes);
 app.use("/auth", authRoutes);
 
 // Routes

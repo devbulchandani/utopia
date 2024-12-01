@@ -9,7 +9,7 @@ import { ParallaxSection } from "../components/ParallaxSection";
 
 export const Home = () => {
   const heroBackground = useRandomBackground();
-  const communityBackground = useRandomBackground();
+  const communityBackground = heroBackground;
 
   return (
     <div className="min-h-screen bg-black text-cream-100 ">
@@ -33,9 +33,9 @@ export const Home = () => {
             <div className="flex items-center justify-center gap-4">
               <Button
                 size="lg"
-                className="bg-cream-100 text-black hover:bg-cream-200"
+                className="bg-cream-100 text-black hover:bg-cream-200 flex items-center"
               >
-                Create Event <ArrowRight className="ml-2 w-5 h-5" />
+                Create Event <ArrowRight className=" w-5 h-5" />
               </Button>
               <Button
                 variant="outline"
