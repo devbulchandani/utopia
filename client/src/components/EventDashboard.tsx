@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -12,7 +12,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { useFullscreen } from "react-use";
 
 interface EventDashboardProps {
   event: {
@@ -33,8 +32,43 @@ export const EventDashboard: React.FC<EventDashboardProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef<HTMLDivElement>(null);
-  const [show, toggle] = useFullscreen(fullscreenRef);
+
+  const toggleFullscreen = useCallback(() => {
+    const element = fullscreenRef.current;
+
+    if (!document.fullscreenElement) {
+      if (element?.requestFullscreen) {
+        element
+          .requestFullscreen()
+          .then(() => setIsFullscreen(true))
+          .catch((err) => {
+            console.error("Error attempting to enable fullscreen:", err);
+          });
+      }
+    } else {
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch((err) => {
+          console.error("Error attempting to exit fullscreen:", err);
+        });
+    }
+  }, []);
+
+  // Add fullscreen change event listener
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -70,7 +104,7 @@ export const EventDashboard: React.FC<EventDashboardProps> = ({
 
               <div className="absolute top-4 right-4 flex items-center gap-2">
                 <Button
-                  onClick={() => toggle()}
+                  onClick={toggleFullscreen}
                   variant="secondary"
                   size="sm"
                   className="bg-black/50 hover:bg-black/70"

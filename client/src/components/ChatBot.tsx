@@ -1,97 +1,175 @@
 import React, { useState } from "react";
-import { MessageSquare, Send, X, Minimize2, Maximize2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "./ui/button";
+import { MessageCircle, X, Send, Bot } from "lucide-react";
+import toast from "react-hot-toast";
 
-export const ChatBot = () => {
+interface Message {
+  id: string;
+  text: string;
+  isBot: boolean;
+}
+
+export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Hi! I can help you find events or create new ones. What would you like to do?",
+      isBot: true,
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: input,
+      isBot: false,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsTyping(true);
+
+    try {
+      // Send user input to backend
+      const response = await fetch("http://localhost:5000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch bot response.");
+      }
+
+      const data = await response.json();
+
+      // Append bot's response
+      const botMessage: Message = {
+        id: Date.now().toString(),
+        text: data.reply,
+        isBot: true,
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      toast.error("Error fetching response from bot.");
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      toast("👋 How can I help you today?", {
+        duration: 3000,
+        position: "bottom-right",
+      });
+    }
+  };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
-      <AnimatePresence>
-        {isOpen && !isMinimized && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="mb-4 w-96 bg-black rounded-lg shadow-xl border border-zinc-800"
+    <>
+      {/* Chat Button */}
+      <button
+        onClick={toggleChat}
+        className={`fixed bottom-4 left-4 p-4 bg-cream-100 text-black rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 ${
+          isOpen ? "scale-0" : "scale-100"
+        }`}
+      >
+        <MessageCircle className="h-6 w-6" />
+      </button>
+
+      {/* Chat Window */}
+      <div
+        className={`fixed bottom-4 left-4 w-96 bg-zinc-800 rounded-2xl shadow-2xl transition-all duration-300 z-50 ${
+          isOpen
+            ? "scale-100 opacity-100"
+            : "scale-95 opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray/20 bg-cream-100 text-black rounded-t-2xl">
+          <div className="flex items-center space-x-2">
+            <Bot className="h-6 w-6 text-black" /> {/* Bot icon in black */}
+            <span className="font-semibold">Event Assistant</span>
+          </div>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="p-1 hover:bg-gray/10 rounded-full transition-colors"
           >
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-blue-500" />
-                <h3 className="text-white font-medium">AI Event Assistant</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMinimized(true)}
-                  className="p-1 hover:bg-zinc-800 rounded-md transition-colors"
-                >
-                  <Minimize2 className="w-4 h-4 text-zinc-400" />
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-zinc-800 rounded-md transition-colors"
-                >
-                  <X className="w-4 h-4 text-zinc-400" />
-                </button>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div className="h-96 overflow-y-auto p-4 space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${
+                message.isBot ? "justify-start" : "justify-end"
+              }`}
+            >
+              <div
+                className={`max-w-[80%] p-3 rounded-2xl ${
+                  message.isBot
+                    ? "bg-gray-100 text-gray-800"
+                    : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                }`}
+              >
+                {message.text}
               </div>
             </div>
-            <div className="h-96 p-4 overflow-y-auto bg-zinc-900">
-              <div className="space-y-4">
-                <div className="bg-zinc-800 rounded-lg p-3 max-w-[80%]">
-                  <p className="text-white">
-                    How can I assist with your event today?
-                  </p>
+          ))}
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 text-gray-800 p-3 rounded-2xl">
+                <div className="flex space-x-2">
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
                 </div>
               </div>
             </div>
-            <div className="p-4 border-t border-zinc-800 bg-black">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  className="flex-1 bg-zinc-900 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-zinc-800"
-                />
-                <Button variant="primary" size="sm">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </div>
 
-      <AnimatePresence>
-        {isMinimized && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="mb-4 bg-black rounded-lg shadow-xl border border-zinc-800 p-4 flex items-center justify-between w-64"
-          >
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-blue-500" />
-              <span className="text-white">AI Assistant</span>
-            </div>
+        {/* Input */}
+        <div className="p-4 border-t border-gray">
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Ask me anything..."
+              className="flex-1 p-[10px] border border-gray rounded-lg focus:outline-none focus:ring focus:ring-purple-600"
+            />
             <button
-              onClick={() => setIsMinimized(false)}
-              className="p-1 hover:bg-zinc-800 rounded-md transition-colors"
+              onClick={handleSend}
+              className="p-[10px] bg-cream-300 text-black rounded-lg hover:bg-opacity-[80%] transition-opacity"
             >
-              <Maximize2 className="w-4 h-4 text-zinc-400" />
+              <Send className="h-[20px] w-[20px]" />
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {!isOpen && !isMinimized && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 flex items-center justify-center shadow-lg bg-black hover:bg-zinc-900 text-cream-100 border border-cream-100/20"
-        >
-          <MessageSquare className="w-6 h-6" />
-        </Button>
-      )}
-    </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
-};
+}

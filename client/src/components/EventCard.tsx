@@ -21,7 +21,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onSelect }) => {
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      className="group relative bg-zinc-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-cream-100/10 hover:border-cream-100/20 transition-colors"
+      className=" relative bg-zinc-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-cream-100/10 hover:border-cream-100/20 transition-colors"
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -69,9 +69,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onSelect }) => {
 
         <Button
           onClick={onSelect}
-          className="w-full opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-cream-100 to-cream-200 text-black hover:opacity-90"
+          className="w-full 
+            bg-gradient-to-r from-cream-100 to-cream-200 
+            text-black 
+            hover:opacity-90 
+            group-hover:opacity-100 
+            md:opacity-0 
+            transition-opacity"
         >
-          <Maximize2 className="w-4 h-4 mr-2" />
           View Details
         </Button>
       </div>

@@ -24,6 +24,8 @@ function App() {
             <Route path="/create" element={<CreateEvent />} />
             <Route path="/user/:userId/events" element={<MyEvents />} />
           </Routes>
+          {/* Chatbot Section */}
+          <ChatBot />
         </main>
         <Footer />
         <ChatBot />
