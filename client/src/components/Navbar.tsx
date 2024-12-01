@@ -1,11 +1,14 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/clerk-react";
+
 
 export const Navbar = () => {
+  const { isSignedIn, userId } = useAuth();
   const location = useLocation();
-
+  const navigate = useNavigate();
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
@@ -30,30 +33,49 @@ export const Navbar = () => {
         <div className="flex items-center gap-8">
           <Link
             to="/events"
-            className={`text-sm ${
-              location.pathname === "/events"
-                ? "text-cream-100"
-                : "text-cream-100/60 hover:text-cream-100"
-            } transition-colors`}
+            className={`text-sm ${location.pathname === "/events"
+              ? "text-cream-100"
+              : "text-cream-100/60 hover:text-cream-100"
+              } transition-colors`}
           >
             Events
           </Link>
           <Link
             to="/create"
-            className={`text-sm ${
-              location.pathname === "/create"
-                ? "text-cream-100"
-                : "text-cream-100/60 hover:text-cream-100"
-            } transition-colors`}
+            className={`text-sm ${location.pathname === "/create"
+              ? "text-cream-100"
+              : "text-cream-100/60 hover:text-cream-100"
+              } transition-colors`}
           >
             Create Event
           </Link>
+          {isSignedIn && (
+            <Link
+              to={`/user/${userId}/events`}
+              className={`text-sm ${location.pathname === `/user/${userId}/events`
+                ? "text-cream-100"
+                : "text-cream-100/60 hover:text-cream-100"
+                } transition-colors`}
+            >
+              My Events
+            </Link>
+          )}
+
         </div>
 
-        {/* Connect Wallet Button */}
-        <button className="bg-white text-black rounded-full px-4 py-2 text-sm hover:bg-black hover:text-white transition-colors">
-          Connect Wallet
-        </button>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+        <SignedOut>
+          <Link 
+          className={`text-sm ${location.pathname === "/sign-in"
+            ? "text-cream-100"
+            : "text-cream-100/60 hover:text-cream-100"
+            } transition-colors`}
+          to="/sign-in">Sign In</Link>
+        </SignedOut>
+
+
       </div>
     </motion.nav>
   );

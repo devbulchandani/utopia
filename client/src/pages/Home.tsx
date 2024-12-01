@@ -135,7 +135,7 @@ export const Home = () => {
       </ParallaxSection>
 
       {/* Chatbot Section */}
-      <ChatBot />
+      
     </div>
   );
 };

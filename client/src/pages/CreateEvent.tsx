@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 
 export const CreateEvent = () => {
   return (
-    <div className="min-h-screen bg-zinc-900 py-12 pt-[80px]">
+    <div className="min-h-screen py-12 pt-[80px]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-bold text-cream-100 mb-8">
           Create New Event
@@ -12,7 +12,7 @@ export const CreateEvent = () => {
 
         <div className="space-y-8">
           {/* Event Cover */}
-          <div className="bg-zinc-800 rounded-lg p-8 border border-cream-100/20">
+          <div className="bg-zinc-900 rounded-lg p-8 border border-cream-100/20">
             <div className="flex items-center justify-center h-64 bg-zinc-700 rounded-lg border-2 border-dashed border-cream-100/20">
               <div className="text-center">
                 <ImagePlus className="w-12 h-12 text-cream-100/60 mx-auto mb-2" />
