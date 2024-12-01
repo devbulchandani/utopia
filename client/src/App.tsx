@@ -12,7 +12,7 @@ import MyEvents from "./pages/MyEvents.tsx";
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-b from-zinc-900 to-black  flex flex-col items-center pt-10">
+      <div className="min-h-screen bg-black  flex flex-col items-center pt-10">
         <Navbar />
         <main className="flex-1 w-full min-h-screen">
           {" "}
