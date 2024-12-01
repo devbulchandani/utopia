@@ -15,6 +15,7 @@ import { createEvent } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HfInference } from "@huggingface/inference";
+import { RedirectToSignIn, useUser } from '@clerk/clerk-react'
 
 export interface Event {
   id: string;
@@ -77,6 +78,7 @@ export default function CreateEvent() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [aiDescription, setAiDescription] = useState<string>("");
 
+  const { user, isSignedIn } = useUser();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -84,8 +86,8 @@ export default function CreateEvent() {
     price: 0,
     category: "",
     totalTickets: 0,
-    organizerName: "",
-    organizerContact: "",
+    organizerName: `${user?.firstName} ${user?.lastName}`,
+    organizerContact: user?.emailAddresses[0].emailAddress || '',
     image: null,
   });
 
@@ -283,8 +285,8 @@ export default function CreateEvent() {
                   {isGenerating
                     ? "Generating..."
                     : isGeneratingImage
-                    ? "Creating Image..."
-                    : "Generate"}
+                      ? "Creating Image..."
+                      : "Generate"}
                 </span>
               </button>
             </div>
@@ -486,6 +488,7 @@ export default function CreateEvent() {
                       Organizer Name
                     </label>
                     <input
+                      disabled={true}
                       type="text"
                       required
                       placeholder="Enter organizer name"
@@ -506,6 +509,7 @@ export default function CreateEvent() {
                       Organizer Contact
                     </label>
                     <input
+                      disabled={true}
                       type="email"
                       required
                       placeholder="Enter contact email"
