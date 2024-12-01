@@ -4,9 +4,9 @@ import { Navbar } from "./components/Navbar.tsx";
 import { Footer } from "./components/Footer.tsx";
 import { Home } from "./pages/Home.tsx";
 import { Events } from "./pages/Events.tsx";
-import { CreateEvent } from "./pages/CreateEvent.tsx";
+import CreateEvent from './pages/CreateEvent.tsx'
 import SignInPage from "./pages/sign-in.tsx";
-import { ChatBot } from "./components/ChatBot.tsx";
+import ChatBot from "./components/ChatBot.tsx";
 import MyEvents from "./pages/MyEvents.tsx";
 
 function App() {

@@ -23,7 +23,7 @@ export interface Event {
   date: Date;
   location: string;
   price: number;
-  imageUrl: string;
+  image: File;
   category: string;
   tickets: { available: number; total: number };
   organizer: { name: string; contact: string };
