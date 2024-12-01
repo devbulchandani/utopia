@@ -1,13 +1,19 @@
 import './App.css'
-
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
+import LoginPage from './pages/sign-in';
+import useRegisterUser from './hooks/useRegisterUser';
 
 function App() {
-
+  useRegisterUser();
   return (
-    <>
-      <h1 className='text-red-500 text-4xl'>Hello</h1>
-    </>
-
+    <header>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
+      <SignedOut>
+        <LoginPage />
+      </SignedOut>
+    </header>
   )
 }
 
