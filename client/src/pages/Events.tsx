@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Calendar, MapPin, Users, Maximize2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { EventDashboard } from "../components/EventDashboard";
+import {EventDashboard} from "../components/EventDashboard";
 import { Button } from "../components/ui/button";
 import { EventCard } from "../components/EventCard";
 

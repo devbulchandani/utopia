@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowRight, Sparkles, Users, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
-import { ChatBot } from "../components/ChatBot";
+
 import { FeaturedCompanies } from "../components/FeaturedCompanies";
 import { useRandomBackground } from "../hooks/useRandomBackground";
 import { ParallaxSection } from "../components/ParallaxSection";
@@ -12,7 +12,7 @@ export const Home = () => {
   const communityBackground = useRandomBackground();
 
   return (
-    <div className="min-h-screen bg-black text-cream-100">
+    <div className="min-h-screen bg-black text-cream-100 ">
       {/* Hero Section */}
       <ParallaxSection image={heroBackground} height="h-screen">
         <div className="relative pt-32 pb-20 px-4 min-h-screen">
@@ -134,8 +134,7 @@ export const Home = () => {
         </div>
       </ParallaxSection>
 
-      {/* Chatbot Section */}
-      <ChatBot />
+     
     </div>
   );
 };
