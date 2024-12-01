@@ -1,0 +1,14 @@
+{
+  "name": "hardhat-project",
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "ethers": "^6.13.4",
+    "hardhat": "^2.22.16",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
