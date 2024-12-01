@@ -1,4 +1,4 @@
-export const getTimeStatus = (date: string) => {
+export const getTimeStatus = (date: Date) => {
     const eventTime = new Date(date).getTime();
     const now = new Date().getTime();
     const difference = eventTime - now;
@@ -16,7 +16,7 @@ export const getTimeStatus = (date: string) => {
     return difference > 0 ? 'upcoming' : 'past';
 };
 
-export const getRelativeTimeString = (date: string) => {
+export const getRelativeTimeString = (date: Date) => {
     const difference = new Date(date).getTime() - new Date().getTime();
     const hours = Math.abs(Math.floor(difference / (1000 * 60 * 60)));
     const days = Math.floor(hours / 24);

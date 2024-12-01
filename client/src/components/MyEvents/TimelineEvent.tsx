@@ -14,14 +14,14 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, isLive }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const timeStatus = getTimeStatus(event.date);
 
-    const formatTime = (dateString: string) => {
+    const formatTime = (dateString: Date) => {
         return new Date(dateString).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
         });
     };
 
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString: Date) => {
         const date = new Date(dateString);
         return {
             day: date.getDate(),

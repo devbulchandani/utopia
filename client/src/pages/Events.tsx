@@ -65,13 +65,40 @@ export default function EventsPage() {
   ];
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [eventType, setEventType] = useState("");
+  const [location, setLocation] = useState("");
+  const [dateRange, setDateRange] = useState("");
+  const [priceRange, setPriceRange] = useState("");
 
-  const filteredEvents = sampleEvents.filter(
-    (event) =>
+  // State for collapsible sections
+  const [isEventTypeOpen, setEventTypeOpen] = useState(false);
+  const [isLocationOpen, setLocationOpen] = useState(false);
+  const [isDateRangeOpen, setDateRangeOpen] = useState(false);
+  const [isPriceRangeOpen, setPriceRangeOpen] = useState(false);
+
+  const filteredEvents = sampleEvents.filter((event) => {
+    const matchesSearchQuery =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      event.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesEventType = eventType ? event.category === eventType : true;
+    const matchesLocation = location ? event.location.includes(location) : true;
+    const matchesDateRange = dateRange
+      ? new Date(event.date) >= new Date(dateRange)
+      : true;
+    const matchesPriceRange = priceRange
+      ? event.price <= parseFloat(priceRange)
+      : true;
+
+    return (
+      matchesSearchQuery &&
+      matchesEventType &&
+      matchesLocation &&
+      matchesDateRange &&
+      matchesPriceRange
+    );
+  });
 
   return (
     <div className="min-h-screen bg-black py-12 pt-[100px] ">
@@ -83,7 +110,88 @@ export default function EventsPage() {
           <SearchBar onSearch={setSearchQuery} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Filter Section */}
+        <div className="mb-8">
+          <h2 className="text-xl text-white mb-4">Filters</h2>
+
+          {/* Event Type Filter */}
+          <div>
+            <button
+              onClick={() => setEventTypeOpen(!isEventTypeOpen)}
+              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
+            >
+              Event Type
+            </button>
+            {isEventTypeOpen && (
+              <select
+                onChange={(e) => setEventType(e.target.value)}
+                className="p-2 mb-4 w-full"
+              >
+                <option value="">All Types</option>
+                <option value="Tech">Tech</option>
+                <option value="Music">Music</option>
+                <option value="Arts">Arts</option>
+                {/* Add more categories as needed */}
+              </select>
+            )}
+          </div>
+
+          {/* Location Filter */}
+          <div>
+            <button
+              onClick={() => setLocationOpen(!isLocationOpen)}
+              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
+            >
+              Location
+            </button>
+            {isLocationOpen && (
+              <input
+                type="text"
+                placeholder="Location"
+                onChange={(e) => setLocation(e.target.value)}
+                className="p-2 mb-4 w-full"
+              />
+            )}
+          </div>
+
+          {/* Date Range Filter */}
+          <div>
+            <button
+              onClick={() => setDateRangeOpen(!isDateRangeOpen)}
+              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
+            >
+              Date Range
+            </button>
+            {isDateRangeOpen && (
+              <input
+                type="date"
+                onChange={(e) => setDateRange(e.target.value)}
+                className="p-2 mb-4 w-full"
+              />
+            )}
+          </div>
+
+          {/* Price Range Filter */}
+          <div>
+            <button
+              onClick={() => setPriceRangeOpen(!isPriceRangeOpen)}
+              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
+            >
+              Price Range
+            </button>
+            {isPriceRangeOpen && (
+              <input
+                type="number"
+                placeholder="Max Price"
+                onChange={(e) => setPriceRange(e.target.value)}
+                className="p-2 mb-4 w-full"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Event Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
