@@ -1,3 +1,12 @@
+export interface Attendee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  wallerAddress: string;
+  registrationDate: Date;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -15,4 +24,6 @@ export interface Event {
     name: string;
     contact: string;
   };
+  status: 'upcoming' | 'ongoing' | 'cancelled' | 'completed';
+  registered: Attendee[];
 }

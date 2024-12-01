@@ -1,77 +1,84 @@
-import React from "react";
-import { Calendar, MapPin, DollarSign } from "lucide-react";
-import { Event } from "../types/event";
-import { format } from "date-fns";
-import EventDetailsModal from "../components/EventDetailsModal";
+import React from 'react';
+import { Calendar, MapPin, Clock } from 'lucide-react';
+import { Event } from '../types/event'; 
 
 interface EventCardProps {
-  event: Event;
+    event: Event;
+    onEdit: (event: Event) => void;
+    onCancel: (eventId: string) => void;
+    onViewAttendees: (event: Event) => void;
 }
 
-export default function EventCard({ event }: EventCardProps) {
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+const EventCard = ({ event, onEdit, onCancel, onViewAttendees }:EventCardProps) => {
+    const formatDate = (date: Date | string) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
 
-  return (
-    <>
-      <div
-        className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all hover:scale-105 cursor-pointer"
-        onClick={() => setIsModalOpen(true)}
-      >
-        <img
-          src={event.imageUrl}
-          alt={event.title}
-          className="w-full h-48 object-cover"
-        />
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {event.title}
-          </h3>
-          <div className="space-y-2">
-            <div className="flex items-center text-gray-600">
-              <Calendar className="h-5 w-5 mr-2" />
-              <span>{format(new Date(event.date), "PPP")}</span>
+    const formatTime = (date: Date | string) => {
+        return new Date(date).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
+    return (
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div className="h-48 overflow-hidden">
+                <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                />
             </div>
-            <div className="flex items-center text-gray-600">
-              <MapPin className="h-5 w-5 mr-2" />
-              <span>{event.location}</span>
+            <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{event.title}</h3>
+                <p className="text-gray-600 mb-4">{event.description}</p>
+
+                <div className="space-y-2">
+                    <div className="flex items-center text-gray-600">
+                        <Calendar className="w-5 h-5 mr-2" />
+                        <span>{formatDate(event.date)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                        <Clock className="w-5 h-5 mr-2" />
+                        <span>{formatTime(event.date)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                        <MapPin className="w-5 h-5 mr-2" />
+                        <span>{event.location}</span>
+                    </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                    <button
+                        className="text-sm text-blue-500 hover:underline"
+                        onClick={() => onViewAttendees(event)}
+                    >
+                        View Attendees
+                    </button>
+                    <div className="space-x-2">
+                        <button
+                            className="text-sm text-yellow-500 hover:underline"
+                            onClick={() => onEdit(event)}
+                        >
+                            Edit
+                        </button>
+                        <button
+                            className="text-sm text-red-500 hover:underline"
+                            onClick={() => onCancel(event.id)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div className="flex items-center text-gray-600">
-              <DollarSign className="h-5 w-5 mr-2" />
-              <span>${event.price}</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-purple-600 h-full rounded-full"
-                style={{
-                  width: `${
-                    (event.tickets.available / event.tickets.total) * 100
-                  }%`,
-                }}
-              />
-            </div>
-            <p className="text-sm text-gray-600 mt-1">
-              {event.tickets.available} tickets left
-            </p>
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsModalOpen(true);
-            }}
-            className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors"
-          >
-            Buy Ticket
-          </button>
         </div>
-      </div>
+    );
+};
 
-      <EventDetailsModal
-        event={event}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-    </>
-  );
-}
+export default EventCard;

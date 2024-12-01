@@ -53,7 +53,7 @@ interface AIGeneratedEventDetails {
   imagePrompt?: string;
 }
 
-const apiKey = ""; // Add your API key here
+const apiKey = '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'; // Add your API key here
 const client = new HfInference(apiKey);
 const eventPromptTemplate = new PromptTemplate({
   inputVariables: ["details"],
@@ -79,6 +79,7 @@ export default function CreateEvent() {
   const [aiDescription, setAiDescription] = useState<string>("");
 
   const { user, isSignedIn } = useUser();
+
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -86,11 +87,21 @@ export default function CreateEvent() {
     price: 0,
     category: "",
     totalTickets: 0,
-    organizerName: `${user?.firstName} ${user?.lastName}`,
+    organizerName: `${user?.firstName} ${user?.lastName}` || '',
     organizerContact: user?.emailAddresses[0].emailAddress || '',
     image: null,
   });
 
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        organizerName: `${user.firstName || ''} ${user.lastName || ''}`,
+        organizerContact: user.emailAddresses?.[0]?.emailAddress || '',
+      }));
+    }
+  }, [user]);
+  console.log(user?.emailAddresses[0].emailAddress );
   useEffect(() => {
     const savedData = localStorage.getItem("eventDraft");
     if (savedData) {
@@ -123,7 +134,7 @@ export default function CreateEvent() {
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
         {
           headers: {
-            Authorization: `Bearer key`,
+            Authorization: `Bearer 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`,
             "Content-Type": "application/json",
           },
           method: "POST",
@@ -165,10 +176,10 @@ export default function CreateEvent() {
       const chatCompletion = await client.chatCompletion({
         model: "meta-llama/Llama-3.2-3B-Instruct",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 1500,
-        temperature: 0.6,
+        max_tokens: 2000,
+        temperature: 0.5,
       });
-
+      console.log(chatCompletion.choices[0].message.content);
       const output = String(chatCompletion.choices[0].message.content);
       const eventDetails = JSON.parse(output) as AIGeneratedEventDetails;
 
@@ -181,8 +192,8 @@ export default function CreateEvent() {
           location: eventDetails.location || "",
           category: eventDetails.category || "",
           totalTickets: Number(eventDetails.totalTickets) || 0,
-          organizerName: "",
-          organizerContact: "",
+          organizerName: `${user?.firstName} ${user?.lastName}`,
+          organizerContact: user?.emailAddresses[0].emailAddress || '',
         }));
 
         if (eventDetails.imagePrompt) {

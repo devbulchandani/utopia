@@ -7,8 +7,8 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+    const formatDate = (date: Date | string) => {
+        return new Date(date).toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -16,8 +16,8 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         });
     };
 
-    const formatTime = (dateString: string) => {
-        return new Date(dateString).toLocaleTimeString('en-US', {
+    const formatTime = (date: Date | string) => {
+        return new Date(date).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
         });
@@ -53,7 +53,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                     <p className="text-sm text-gray-500">
-                        Registered on {formatDate(event.registeredAt)}
+                        Registered: {event.registered.length} attendee(s)
                     </p>
                 </div>
             </div>

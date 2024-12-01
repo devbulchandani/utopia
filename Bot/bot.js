@@ -5,7 +5,7 @@ import express from "express";
 import cors from "cors";
 
 dotenv.config();
-const apiKey = "";
+const apiKey = process.env.HUGGINGFACEHUB_API_KEY;
 const client = new HfInference(apiKey);
 const app = express();
 app.use(cors());
@@ -20,8 +20,7 @@ async function run() {
 
   // Initialize Pinecone
   const pc = new Pinecone({
-    apiKey:
-      "",
+    apiKey: "pcsk_28iS1v_RMcjnaVH9k6wb4ssKK8RxBkUsHaQSb13rMQJr8Nm9fwBPzuzLAPps2RcgbqGLwf",
   });
 
   const indexName = "goutam";
@@ -100,7 +99,7 @@ async function run() {
   // app.post("/upsert", async (req, res) => {});
 
   // Start the Express server
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 4001;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

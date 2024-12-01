@@ -8,6 +8,7 @@ import CreateEvent from './pages/CreateEvent.tsx'
 import SignInPage from "./pages/sign-in.tsx";
 import ChatBot from "./components/ChatBot.tsx";
 import MyEvents from "./pages/MyEvents.tsx";
+import { Dashboard } from "./pages/Dashboard.tsx";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/create" element={<CreateEvent />} />
             <Route path="/user/:userId/events" element={<MyEvents />} />
+            <Route path="/user/:userId/dashboard" element={<Dashboard />} />
           </Routes>
           {/* Chatbot Section */}
           <ChatBot />
