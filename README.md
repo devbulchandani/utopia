@@ -18,7 +18,7 @@ Utopia is not same old event platform like in web2 but it has something more to 
   and faster but safer from frauds.
 
 #### AI Capabilities
-- AI-powered event assistant to query all your doubts about 
+- AI-powered event assistant to query all your doubts about the events on going ,upcoming or ended.
 - Intelligent query resolution for event-related questions
 - Automated event content generation
 
@@ -27,54 +27,53 @@ Utopia is not same old event platform like in web2 but it has something more to 
 - **Frontend**: Vite + React + TypeScript
 - **Blockchain**: Ethereum/Web3 Integration
 - **Smart Contracts**: Solidity
-- **AI Integration**: [Specify AI Service/Model]
-- **State Management**: [State Management Library]
-- **Styling**: [CSS Framework/Styling Solution]
+- **AI Integration**: HuggingFace hub/llama 3.2 3B Instruct
+- **Styling**: Tailwind and other Ai tools.
 
 ## Prerequisites
 
 - Node.js (v18+ recommended)
-- npm or yarn
-- Ethereum Wallet (MetaMask recommended)
+- npm
+- Ethereum Wallet (MetaMask/Coinbase recommended)
 - Hardhat or Truffle for smart contract development
+- Solidity to write smart contracts
 
 ## Installation
 
 1. Clone the repository
 ```bash
-git clone https://github.com/[your-username]/utopia.git
+git clone https://github.com/devbulchandani/utopia.git
 cd utopia
 ```
 
-2. Install dependencies
+2. Install dependencies on client ,server ,Bot and contracts folders
 ```bash
 npm install
-# or
-yarn install
 ```
 
 3. Set up environment variables
-Create a `.env` file with the following:
+Create a `.env` file for client with the following:
 ```
-VITE_INFURA_PROJECT_ID=your_infura_project_id
-VITE_AI_API_KEY=your_ai_service_api_key
-VITE_CONTRACT_ADDRESS=your_deployed_contract_address
-```
+VITE_CLERK_PUBLISHABLE_KEY=api_key
+PINATA_API_KEY=api_key
+PINATA_JWT=api_key
+REACT_APP_CONTRACT_ADDRESS=api_key
+HUGGINGFACEHUB_API_KEY=api_key
 
 ## Running the Project
 
-### Development Mode
+### Development Mode for both client and server.
 ```bash
 npm run dev
-# or
-yarn dev
+```
+### Development Mode for both Bot.
+```bash
+node bot
 ```
 
 ### Build for Production
 ```bash
 npm run build
-# or
-yarn build
 ```
 
 ## Smart Contract Development
@@ -94,15 +93,16 @@ npx hardhat run scripts/deploy.js --network [network]
 ### Run Frontend Tests
 ```bash
 npm run test
-# or
-yarn test
 ```
 
 ### Run Smart Contract Tests
 ```bash
 npx hardhat test
 ```
-
+### Run Backend Tests
+```bash
+npm run dev
+```
 ## Key Components
 
 ### Event NFT Structure
@@ -116,10 +116,8 @@ npx hardhat test
 - Intelligent event assistant chatbot
 
 ## Security Considerations
-- Implement robust access controls
-- Use OpenZeppelin security standards
-- Regular smart contract audits
-- Secure AI API key management
+- Use of simple blockchain approach keeping safety in mind
+- Currently used open source model but later will use better paid model for safety 
 
 ## Future Roadmap
 - Multi-chain support
@@ -141,5 +139,5 @@ npx hardhat test
 
 ## Contact
 
-[Your Name/Team Contact Information]
-- Project Link: https://github.com/[your-username]/utopia
+Team Kairos
+- Project Link: https://github.com/devbulchandani/utopia
