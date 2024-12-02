@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   Calendar,
@@ -7,11 +7,13 @@ import {
   User,
   Mail,
   Phone,
-  CreditCard,
+  IndianRupee,
 } from "lucide-react";
 import { Event } from "../types/event";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
+import { useUser } from '@clerk/clerk-react';
+import axios from "axios";
 
 interface EventDetailsModalProps {
   event: Event;
@@ -26,63 +28,71 @@ interface TicketFormData {
   quantity: number;
 }
 
-interface PaymentFormData {
-  cardNumber: string;
-  expiry: string;
-  cvv: string;
-  name: string;
-}
-
 export default function EventDetailsModal({
   event,
   isOpen,
   onClose,
 }: EventDetailsModalProps) {
-  const [step, setStep] = useState<"details" | "ticket" | "payment">("details");
+  const { user } = useUser();
+  const [step, setStep] = useState<"details" | "ticket">("details");
   const [ticketData, setTicketData] = useState<TicketFormData>({
     name: "",
     email: "",
     phone: "",
     quantity: 1,
   });
-  const [paymentData, setPaymentData] = useState<PaymentFormData>({
-    cardNumber: "",
-    expiry: "",
-    cvv: "",
-    name: "",
-  });
 
-  const handleTicketSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep("payment");
-  };
+  useEffect(() => {
+    if (user) {
+      setTicketData((prev) => ({
+        ...prev,
+        name: `${user.firstName || ''} ${user.lastName || ''}`,
+        email: user.emailAddresses?.[0]?.emailAddress || '',
+      }));
+    }
+  }, [user]);
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handleTicketSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate payment processing
-    toast
-      .promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
-        loading: "Processing payment...",
-        success: "Payment successful! Tickets booked.",
-        error: "Payment failed. Please try again.",
-      })
-      .then(() => {
-        onClose();
-        setStep("details");
+    const updatedEvent = {
+      ...event,
+      registered: [
+        ...event.registered,
+        {
+          name: ticketData.name,
+          email: ticketData.email,
+          phone: ticketData.phone,
+          quantity: ticketData.quantity,
+        },
+      ],
+    };
+
+    try {
+      await axios.patch(`http://localhost:4000/api/events/${event._id}/register`, {
+        registered: updatedEvent.registered,
       });
+
+      onClose();
+      setStep("details");
+
+      toast.success("Tickets booked successfully!");
+    } catch (error) {
+      toast.error("Failed to book tickets. Please try again.");
+      console.error(error);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div className="fixed inset-0 z-50 overflow-y-auto ">
+      <div className="flex items-center justify-center min-h-screen  px-4 pt-4 pb-20 text-center text-black sm:block sm:p-0">
         <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={onClose}
         />
 
-        <div className="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-2xl shadow-xl">
+        <div className="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-2xl border-4 border-gray-900 shadow-xl">
           {/* Header */}
           <div className="relative">
             <button
@@ -114,29 +124,28 @@ export default function EventDetailsModal({
                       <span>{event.location}</span>
                     </div>
                     <div className="flex items-center text-gray-600">
-                      <DollarSign className="h-5 w-5 mr-3" />
-                      <span>${event.price}</span>
+                      <IndianRupee className="h-5 w-5 mr-3" />
+                      <span>{event.price}</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div className="bg-gray-50 p-6 rounded-xl">
+                  <div className="bg-gray-50 border border-gray-900 text-black p-6 rounded-xl">
                     <h3 className="text-xl font-semibold mb-4">
                       Ticket Information
                     </h3>
                     <div className="space-y-2">
-                      <p>Available Tickets: {event.tickets.available}</p>
-                      <p>Total Capacity: {event.tickets.total}</p>
+                      <p>Available Tickets: {event.tickets?.available}</p>
+                      <p>Total Capacity: {event.tickets?.total}</p>
                       <div className="mt-4">
                         <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
                           <div
                             className="bg-purple-600 h-full rounded-full"
                             style={{
-                              width: `${
-                                (event.tickets.available /
-                                  event.tickets.total) *
+                              width: `${(event.tickets?.available /
+                                event.tickets?.total) *
                                 100
-                              }%`,
+                                }%`,
                             }}
                           />
                         </div>
@@ -168,14 +177,16 @@ export default function EventDetailsModal({
                       <input
                         type="text"
                         required
+                        disabled
                         className="pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={ticketData.name}
+                        value={user?.fullName || ticketData.name} // Fill name from Clerk
                         onChange={(e) =>
                           setTicketData({ ...ticketData, name: e.target.value })
                         }
                       />
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Email
@@ -185,8 +196,9 @@ export default function EventDetailsModal({
                       <input
                         type="email"
                         required
+                        disabled
                         className="pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={ticketData.email}
+                        value={user?.emailAddresses[0].emailAddress || ticketData.email} // Fill email from Clerk
                         onChange={(e) =>
                           setTicketData({
                             ...ticketData,
@@ -196,6 +208,7 @@ export default function EventDetailsModal({
                       />
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone
@@ -223,7 +236,7 @@ export default function EventDetailsModal({
                     <input
                       type="number"
                       min="1"
-                      max={event.tickets.available}
+                      max={Math.min(event.tickets?.available || 0, 5)}
                       required
                       className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                       value={ticketData.quantity}
@@ -240,7 +253,7 @@ export default function EventDetailsModal({
                   <button
                     type="button"
                     onClick={() => setStep("details")}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg"
                   >
                     Back
                   </button>
@@ -248,121 +261,7 @@ export default function EventDetailsModal({
                     type="submit"
                     className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors"
                   >
-                    Continue to Payment
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {step === "payment" && (
-            <div className="p-8">
-              <h3 className="text-2xl font-bold mb-6">Payment Details</h3>
-              <form onSubmit={handlePaymentSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                      <input
-                        type="text"
-                        required
-                        maxLength={19}
-                        placeholder="1234 5678 9012 3456"
-                        className="pl-10 w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={paymentData.cardNumber}
-                        onChange={(e) => {
-                          const value = e.target.value
-                            .replace(/\s/g, "")
-                            .replace(/(\d{4})/g, "$1 ")
-                            .trim();
-                          setPaymentData({ ...paymentData, cardNumber: value });
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Expiry Date
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                      value={paymentData.expiry}
-                      onChange={(e) => {
-                        const value = e.target.value
-                          .replace(/\D/g, "")
-                          .replace(/(\d{2})(\d{0,2})/, "$1/$2");
-                        setPaymentData({ ...paymentData, expiry: value });
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      CVV
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={3}
-                      placeholder="123"
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                      value={paymentData.cvv}
-                      onChange={(e) =>
-                        setPaymentData({
-                          ...paymentData,
-                          cvv: e.target.value.replace(/\D/g, ""),
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cardholder Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                      value={paymentData.name}
-                      onChange={(e) =>
-                        setPaymentData({ ...paymentData, name: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="border-t pt-6 mt-6">
-                  <div className="flex justify-between mb-4">
-                    <span>Subtotal</span>
-                    <span>
-                      ${(event.price * ticketData.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>
-                      ${(event.price * ticketData.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep("ticket")}
-                    className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors"
-                  >
-                    Pay ${(event.price * ticketData.quantity).toFixed(2)}
+                    Book Tickets
                   </button>
                 </div>
               </form>

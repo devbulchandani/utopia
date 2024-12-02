@@ -4,6 +4,8 @@ import multer from "multer";
 
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import mongoose from "mongoose";
+import User from "../models/users";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -23,11 +25,20 @@ router.get("/", async (req, res) => {
 
 // Get event by ID
 router.get("/:id", async (req, res) => {
+    const eventId = req.params.id;
+
+    // Check if the eventId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        return res.status(400).json({ error: "Invalid event ID format" });
+    }
+
     try {
-        const event = await Event.findById(req.params.id);
+        const event = await Event.findById(eventId);
+
         if (!event) {
             return res.status(404).json({ error: "Event not found" });
         }
+
         res.status(200).json(event);
     } catch (error) {
         console.error("Error fetching event:", error);
@@ -35,12 +46,10 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// Create a new event
+// Create a new event 
 router.post("/", upload.single("image"), async (req, res) => {
-    console.log("Storage: ", upload);
     try {
         const { body, file } = req;
-        console.log("Request Body: ", JSON.stringify(body));
 
         if (!file || !file.buffer) {
             return res.status(400).json({ error: "No image file provided" });
@@ -49,13 +58,13 @@ router.post("/", upload.single("image"), async (req, res) => {
         // Parse numbers and dates properly
         const price = parseFloat(body.price);
         const totalTickets = parseInt(body.totalTickets, 10);
-        const availableTickets = totalTickets; 
+        const availableTickets = totalTickets;
         const date = new Date(body.date);
 
         if (isNaN(price) || isNaN(totalTickets) || isNaN(date.getTime())) {
             return res.status(400).json({ error: "Invalid numeric or date value" });
         }
-
+        console.log('hi');
         const base64Image = file.buffer.toString("base64");
         const dataUri = `data:${file.mimetype};base64,${base64Image}`;
         const result = await cloudinary.uploader.upload(dataUri, {
@@ -108,18 +117,38 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete an event by ID
-router.delete("/:id", async (req, res) => {
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
     try {
-        const deletedEvent = await Event.findByIdAndDelete(req.params.id);
-        if (!deletedEvent) {
-            return res.status(404).json({ error: "Event not found" });
+        const event = await Event.findByIdAndDelete(id);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
         }
-        res.status(200).json({ message: "Event deleted successfully" });
+        res.status(200).json({ message: 'Event deleted successfully' });
     } catch (error) {
-        console.error("Error deleting event:", error);
-        res.status(500).json({ error: "Failed to delete event" });
+        console.error('Error deleting event:', error);
+        res.status(500).json({ message: 'Failed to delete event', error });
     }
 });
+
+
+router.patch('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const event = await Event.findByIdAndUpdate(
+            id,
+            { status: 'cancelled' },
+            { new: true } // Return the updated document
+        );
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+        res.status(200).json({ message: 'Event cancelled successfully', event });
+    } catch (error) {
+        console.error('Error cancelling event:', error);
+        res.status(500).json({ message: 'Failed to cancel event', error });
+    }
+})
 
 // Purchase tickets
 router.post("/tickets/purchase", async (req, res) => {
@@ -147,5 +176,116 @@ router.post("/tickets/purchase", async (req, res) => {
         res.status(500).json({ error: "Failed to purchase tickets" });
     }
 });
+
+router.get("/user/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const user = await User.findOne({
+            clerkId: userId
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const userEmail = user.email;
+        const events = await Event.find({ "organizer.contact": userEmail });
+
+        if (!events.length) {
+            return res.status(404).json({ error: "No events found for this user" });
+        }
+
+        res.status(200).json(events);
+    } catch (error) {
+        console.error("Error fetching events for user by email:", error);
+        res.status(500).json({ error: "Failed to fetch events for user" });
+    }
+});
+
+router.get("/user/:userId/hasEvents", async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        const user = await User.findOne({ clerkId: userId });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const userEmail = user.email;
+        const events = await Event.find({ "organizer.contact": userEmail });
+
+        res.status(200).json({ hasEvents: events.length > 0 });
+    } catch (error) {
+        console.error("Error fetching events for user by email:", error);
+        res.status(500).json({ error: "Failed to fetch events for user" });
+    }
+});
+
+router.patch('/:id/register', async (req, res) => {
+    const eventId = req.params.id;
+    const { registered } = req.body;
+
+    if (!registered || registered.length === 0) {
+        return res.status(400).json({ message: "No registration details provided" });
+    }
+
+    const { name, email, phone, quantity } = registered[0]; // Extract the first object from the array
+    try {
+        const event = await Event.findById(eventId);
+
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        event.registered.push({
+            name,
+            email,
+            phone,
+            quantity,
+        });
+
+        event.tickets.available -= quantity;
+
+        if (event.tickets.available < 0) {
+            return res.status(400).json({ message: "Not enough available tickets" });
+        }
+
+        await event.save();
+
+        return res.status(200).json(event);
+    } catch (error) {
+        console.error("Error registering for event:", error);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+});
+
+
+router.get("/user/:userId/events", async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findOne({ clerkId: userId });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const userEmail = user.email;
+        console.log(userEmail);
+        const events = await Event.find({
+            "registered.email": userEmail,
+        });
+
+
+        if (events.length === 0) {
+            return res.status(404).json({ error: "No events found for this user" });
+        }
+
+        res.status(200).json(events);
+    } catch (error) {
+        console.error("Error fetching events for user:", error);
+        res.status(500).json({ error: "Failed to fetch events for user" });
+    }
+});
+
+
+
 
 export default router;

@@ -24,7 +24,7 @@ cloudinary.config({
   cloud_name:'dlevbirqh',
   api_key:'749639798546451',
   api_secret:'AGuwIpLSJ_a-DbikKDDC7T3SDwc',
-})
+}) 
 
 
 connectDB();
@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/events", eventRoutes);
 app.use("/auth", authRoutes);
-app.use("/api/events", eventRoutes)
+
 
 // Routes
 

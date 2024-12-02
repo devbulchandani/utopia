@@ -1,0 +1,10 @@
+import { PinataSDK } from "pinata";
+const pinata = new PinataSDK({
+  pinataJwt:
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiJlYjFmYzdkZC02YmU4LTRlNmQtODIxZC0yOTMyNzliMGQ3OTciLCJlbWFpbCI6ImRhaXdpa2RvbWFpbkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiYmI2YTI0YmQ2OTMzYzA3OTljZmUiLCJzY29wZWRLZXlTZWNyZXQiOiI1NDc5MDk0ODFiOGVmN2U1ZTE0MzVkZWEyY2Q4ODBiMDViNmRjYmQxNjI1NDgyOGVlZGE2YjRiY2UyMTIxOTFjIiwiZXhwIjoxNzY0NjQ5Nzc1fQ.GPmaePbWKHcpJMfWvTKT7a4tyeElu4CzkuDTGIuXTHQ",
+});
+
+export const uploadToIPFS = async (file: File): Promise<void> => {
+  const upload = await pinata.upload.file(file);
+  console.log("upload", upload);
+};

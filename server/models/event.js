@@ -1,31 +1,34 @@
-const { default: User } = require("./users");
+import mongoose, { Schema, Document } from "mongoose";
 
-const eventSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  date: Date,
-  location: String,
-  price: Number,
-  imageUrl: String,
-  category: String,
-  tickets: {
-    available: Number,
-    total: Number,
-  },
-  organizer: {
-    name: String,
-    contact: String,
-  },
-  status: {
-    type: String,
-    enum: ['upcoming', 'ongoing', 'cancelled', 'completed'],
-    default: 'upcoming',
-  },
-  registered: [
-    {
-      User,
-      registrationDate: Date,
+const eventSchema = new Schema({
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    date: { type: Date, required: true },
+    location: { type: String, required: true },
+    price: { type: Number, required: true },
+    tickets: {
+        total: {
+            type: Number,
+            required: [true, 'Total tickets are required'],
+            min: [1, 'Total tickets must be greater than 0']
+        },
+        available: {
+            type: Number,
+            required: [true, 'Available tickets are required'],
+            min: [0, 'Available tickets cannot be negative']
+        },
     },
-  ],
-  createdAt: { type: Date, default: Date.now },
-});
+    imageUrl: { type: String, required: true },
+    registered: [
+        {
+            name: String,
+            email: String,
+            phone: String,
+            quantity: Number,
+        },
+    ],
+}, { timestamps: true });
+
+const Event = mongoose.model('Event', eventSchema);
+
+export default Event

@@ -1,88 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import EventCard from "../components/EventCard";
 import SearchBar from "../components/SearchBar";
 import { Event } from "../types/event";
 
 export default function EventsPage() {
-  const sampleEvents: Event[] = [
-    {
-      id: "1",
-      title: "Tech Conference 2024",
-      description: "Join us for the biggest tech conference of the year",
-      date: new Date("2024-06-15"),
-      location: "San Francisco, CA",
-      price: 299.99,
-      imageUrl:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
-      category: "Tech",
-      tickets: {
-        available: 150,
-        total: 500,
-      },
-      organizer: {
-        name: "TechEvents Inc",
-        contact: "contact@techevents.com",
-      },
-    },
-    {
-      id: "2",
-      title: "Summer Music Festival",
-      description: "A weekend of amazing music under the stars",
-      date: new Date("2024-07-20"),
-      location: "Austin, TX",
-      price: 149.99,
-      imageUrl:
-        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&q=80",
-      category: "Music",
-      tickets: {
-        available: 2000,
-        total: 5000,
-      },
-      organizer: {
-        name: "Festival Productions",
-        contact: "info@festivalprods.com",
-      },
-    },
-    {
-      id: "3",
-      title: "Art Gallery Opening",
-      description: "Exclusive preview of contemporary art pieces",
-      date: new Date("2024-05-10"),
-      location: "New York, NY",
-      price: 75.0,
-      imageUrl:
-        "https://images.unsplash.com/photo-1531243269054-5ebf6f34081e?auto=format&fit=crop&q=80",
-      category: "Arts",
-      tickets: {
-        available: 50,
-        total: 200,
-      },
-      organizer: {
-        name: "Metropolitan Gallery",
-        contact: "gallery@metart.com",
-      },
-    },
-  ];
-
+  const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [eventType, setEventType] = useState("");
   const [location, setLocation] = useState("");
   const [dateRange, setDateRange] = useState("");
   const [priceRange, setPriceRange] = useState("");
 
-  // State for collapsible sections
-  const [isEventTypeOpen, setEventTypeOpen] = useState(false);
-  const [isLocationOpen, setLocationOpen] = useState(false);
-  const [isDateRangeOpen, setDateRangeOpen] = useState(false);
-  const [isPriceRangeOpen, setPriceRangeOpen] = useState(false);
+  // Fetch events from the backend API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/api/events");
+        if (response.ok) {
+          const data = await response.json();
+          setEvents(data);
+        } else {
+          console.error("Error fetching events");
+        }
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
 
-  const filteredEvents = sampleEvents.filter((event) => {
+    fetchEvents();
+  }, []);
+
+  const filteredEvents = events.filter((event) => {
     const matchesSearchQuery =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesEventType = eventType ? event.category === eventType : true;
+    const matchesEventType = eventType
+      ? event.category.toLowerCase() === eventType.toLowerCase()
+      : true;
+
     const matchesLocation = location ? event.location.includes(location) : true;
     const matchesDateRange = dateRange
       ? new Date(event.date) >= new Date(dateRange)
@@ -100,102 +57,89 @@ export default function EventsPage() {
     );
   });
 
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setEventType("");
+    setLocation("");
+    setDateRange("");
+    setPriceRange("");
+  };
+  console.log(JSON.stringify(events[0]));
   return (
-    <div className="min-h-screen bg-black py-12 pt-[100px] ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 ">
-          <h1 className="text-3xl flex justify-center font-bold text-white mb-4">
-            Upcoming Events
-          </h1>
+    <div className="min-h-screen text-white pt-[60px] w-[90%] mx-auto">
+      <div className="flex">
+        {/* Sidebar Filters */}
+        <aside className="bg-gray-800 w-full lg:w-1/4 p-6 space-y-6 h-screen sticky top-0">
+          <h2 className="text-2xl font-bold">Filters</h2>
+
           <SearchBar onSearch={setSearchQuery} />
-        </div>
 
-        {/* Filter Section */}
-        <div className="mb-8">
-          <h2 className="text-xl text-white mb-4">Filters</h2>
-
-          {/* Event Type Filter */}
           <div>
-            <button
-              onClick={() => setEventTypeOpen(!isEventTypeOpen)}
-              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
+            <label className="block font-semibold mb-1">Event Type</label>
+            <select
+              onChange={(e) => setEventType(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white"
             >
-              Event Type
-            </button>
-            {isEventTypeOpen && (
-              <select
-                onChange={(e) => setEventType(e.target.value)}
-                className="p-2 mb-4 w-full"
-              >
-                <option value="">All Types</option>
-                <option value="Tech">Tech</option>
-                <option value="Music">Music</option>
-                <option value="Arts">Arts</option>
-                {/* Add more categories as needed */}
-              </select>
-            )}
+              <option value="">All Types</option>
+              <option value="Tech">Tech</option>
+              <option value="Music">Music</option>
+              <option value="Arts">Arts</option>
+            </select>
           </div>
 
-          {/* Location Filter */}
           <div>
-            <button
-              onClick={() => setLocationOpen(!isLocationOpen)}
-              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
-            >
-              Location
-            </button>
-            {isLocationOpen && (
-              <input
-                type="text"
-                placeholder="Location"
-                onChange={(e) => setLocation(e.target.value)}
-                className="p-2 mb-4 w-full"
-              />
-            )}
+            <label className="block font-semibold mb-1">Location</label>
+            <input
+              type="text"
+              placeholder="Enter Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white"
+            />
           </div>
 
-          {/* Date Range Filter */}
           <div>
-            <button
-              onClick={() => setDateRangeOpen(!isDateRangeOpen)}
-              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
-            >
-              Date Range
-            </button>
-            {isDateRangeOpen && (
-              <input
-                type="date"
-                onChange={(e) => setDateRange(e.target.value)}
-                className="p-2 mb-4 w-full"
-              />
-            )}
+            <label className="block font-semibold mb-1">Date Range</label>
+            <input
+              type="date"
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white"
+            />
           </div>
 
-          {/* Price Range Filter */}
           <div>
-            <button
-              onClick={() => setPriceRangeOpen(!isPriceRangeOpen)}
-              className="text-white bg-gray-700 p-2 rounded mb-2 w-full text-left"
-            >
-              Price Range
-            </button>
-            {isPriceRangeOpen && (
-              <input
-                type="number"
-                placeholder="Max Price"
-                onChange={(e) => setPriceRange(e.target.value)}
-                className="p-2 mb-4 w-full"
-              />
-            )}
+            <label className="block font-semibold mb-1">Price Range</label>
+            <input
+              type="number"
+              placeholder="Max Price"
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value)}
+              className="w-full p-2 rounded bg-gray-700 text-white"
+            />
           </div>
-        </div>
 
-        {/* Event Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
+          <button
+            onClick={clearAllFilters}
+            className="w-full bg-red-600 py-2 rounded font-semibold hover:bg-red-700"
+          >
+            Clear Filters
+          </button>
+        </aside>
+
+        {/* Events Section */}
+        <main className="flex-1 shadow-xl p-8 border border-cream-100/20 overflow-y-auto">
+          <h1 className="text-3xl font-bold mb-8">Upcoming Events</h1>
+          {filteredEvents.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvents.map((event) => (
+                <EventCard key={event._id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-lg">No events match your filters.</p>
+          )}
+        </main>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
   Users,
   Tag,
   DollarSign,
+  IndianRupee,
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,7 +16,8 @@ import { createEvent } from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HfInference } from "@huggingface/inference";
-import { RedirectToSignIn, useUser } from '@clerk/clerk-react'
+import { uploadToIPFS } from "../utils/ipfs"; // Import the uploadToIPFS function
+import { useUser } from "@clerk/clerk-react";
 
 export interface Event {
   id: string;
@@ -53,7 +55,7 @@ interface AIGeneratedEventDetails {
   imagePrompt?: string;
 }
 
-const apiKey = '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'; // Add your API key here
+const apiKey = "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"; // Add your API key here
 const client = new HfInference(apiKey);
 const eventPromptTemplate = new PromptTemplate({
   inputVariables: ["details"],
@@ -70,6 +72,7 @@ const eventPromptTemplate = new PromptTemplate({
 });
 
 export default function CreateEvent() {
+  const {user} = useUser();
   const navigate = useNavigate();
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -77,8 +80,7 @@ export default function CreateEvent() {
   const [isGeneratingImage, setIsGeneratingImage] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [aiDescription, setAiDescription] = useState<string>("");
-
-  const { user, isSignedIn } = useUser();
+  const [ipfsHash, setIpfsHash] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -87,8 +89,8 @@ export default function CreateEvent() {
     price: 0,
     category: "",
     totalTickets: 0,
-    organizerName: `${user?.firstName} ${user?.lastName}` || '',
-    organizerContact: user?.emailAddresses[0].emailAddress || '',
+    organizerName: "",
+    organizerContact: "",
     image: null,
   });
 
@@ -101,7 +103,6 @@ export default function CreateEvent() {
       }));
     }
   }, [user]);
-  console.log(user?.emailAddresses[0].emailAddress );
   useEffect(() => {
     const savedData = localStorage.getItem("eventDraft");
     if (savedData) {
@@ -114,7 +115,7 @@ export default function CreateEvent() {
     toast.success("Draft saved successfully!");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData((prev) => ({ ...prev, image: file }));
@@ -124,6 +125,22 @@ export default function CreateEvent() {
         toast.success("Image uploaded successfully!");
       };
       reader.readAsDataURL(file);
+
+      // Modify IPFS upload to handle potential void return
+      try {
+        const uploadResult:any = await uploadToIPFS(file);
+
+        // Check if uploadResult is a string (hash)
+        if (typeof uploadResult === "string" && uploadResult.trim() !== "") {
+          setIpfsHash(uploadResult);
+          toast.success("Image uploaded to IPFS");
+        } else {
+          toast.error("IPFS upload did not return a valid hash");
+        }
+      } catch (error) {
+        toast.error("Failed to upload image to IPFS");
+        console.error("IPFS Upload Error:", error);
+      }
     }
   };
 
@@ -134,7 +151,7 @@ export default function CreateEvent() {
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
         {
           headers: {
-            Authorization: `Bearer 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`,
+            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
           },
           method: "POST",
@@ -159,6 +176,35 @@ export default function CreateEvent() {
     }
   };
 
+  const Speechtotext = (): void => {
+    if (!("webkitSpeechRecognition" in window)) {
+      toast.error("Speech recognition is not supported in your browsers.");
+    }
+    const recognition = new (window as any).webkitSpeechRecognition();
+    recognition.lang = "hi-IN";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      toast("Listening...", { icon: "🎙️" });
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
+      setAiDescription(transcript);
+      toast.success("Speech converted to text!");
+    };
+    recognition.onerror = (event: any) => {
+      toast.error("Speech recognition error: " + event.error);
+    };
+
+    recognition.onend = () => {
+      toast("Speech recognition ended.");
+    };
+
+    recognition.start();
+  };
+
   const generateWithAI = async (): Promise<void> => {
     if (!aiDescription.trim()) {
       toast.error("Please provide a description for AI generation");
@@ -176,10 +222,10 @@ export default function CreateEvent() {
       const chatCompletion = await client.chatCompletion({
         model: "meta-llama/Llama-3.2-3B-Instruct",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 2000,
-        temperature: 0.5,
+        max_tokens: 1500,
+        temperature: 0.6,
       });
-      console.log(chatCompletion.choices[0].message.content);
+
       const output = String(chatCompletion.choices[0].message.content);
       const eventDetails = JSON.parse(output) as AIGeneratedEventDetails;
 
@@ -192,8 +238,8 @@ export default function CreateEvent() {
           location: eventDetails.location || "",
           category: eventDetails.category || "",
           totalTickets: Number(eventDetails.totalTickets) || 0,
-          organizerName: `${user?.firstName} ${user?.lastName}`,
-          organizerContact: user?.emailAddresses[0].emailAddress || '',
+          organizerName: "",
+          organizerContact: "",
         }));
 
         if (eventDetails.imagePrompt) {
@@ -251,6 +297,15 @@ export default function CreateEvent() {
         console.log(`${key}: ${value}`);
       }
       await createEvent(formDataToSend);
+      const response = await fetch("http://localhost:4001/upsert", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formDataToSend), // Send the event data
+      });
+      const result = await response.json();
+      console.log(result);
 
       // Clear local storage after successful submission
       localStorage.removeItem("eventDraft");
@@ -296,9 +351,17 @@ export default function CreateEvent() {
                   {isGenerating
                     ? "Generating..."
                     : isGeneratingImage
-                      ? "Creating Image..."
-                      : "Generate"}
+                    ? "Creating Image..."
+                    : "Generate"}
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={Speechtotext}
+                className="flex items-center space-x-2 px-2 py-3 bg-white text-black mt-2 rounded-xl hover:bg-cream-300 transition-all duration-300 shadow-lg"
+              >
+                <Sparkles className="h-5 w-5" />
+                <span>Start Listening</span>
               </button>
             </div>
 
@@ -401,6 +464,15 @@ export default function CreateEvent() {
                           alt="Preview"
                           className="w-full h-full object-cover rounded-lg"
                         />
+                        {imagePreview && (
+                          <div>
+                            {ipfsHash && (
+                              <p className="text-sm text-white mt-2">
+                                IPFS Hash: {ipfsHash}
+                              </p>
+                            )}
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => {
@@ -452,11 +524,11 @@ export default function CreateEvent() {
                 {/* Price Input */}
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4" />
+                    <IndianRupee className="h-4 w-4" />
                     <span>Price</span>
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                       type="number"
                       required
@@ -499,7 +571,6 @@ export default function CreateEvent() {
                       Organizer Name
                     </label>
                     <input
-                      disabled={true}
                       type="text"
                       required
                       placeholder="Enter organizer name"
@@ -520,7 +591,6 @@ export default function CreateEvent() {
                       Organizer Contact
                     </label>
                     <input
-                      disabled={true}
                       type="email"
                       required
                       placeholder="Enter contact email"

@@ -9,23 +9,23 @@ interface AttendeeTableProps {
 
 export const AttendeeTable: React.FC<AttendeeTableProps> = ({ attendees }) => {
   const columns = [
-    { header: 'Name', accessor: 'name' },
-    { header: 'Email', accessor: 'email' },
-    { 
-      header: 'Registration Date', 
-      accessor: 'registrationDate',
-      cell: (value: Date) => format(new Date(value), 'PPP')
+    {
+      header: 'Name',
+      accessor: 'name',
+      cell: (_: any, attendee: Attendee) => `${attendee.firstName} ${attendee.lastName}`,
     },
-    { header: 'Ticket Type', accessor: 'ticketType' }
+    { header: 'Email', accessor: 'email' },
+    {
+      header: 'Registration Date',
+      accessor: 'registrationDate',
+      cell: (value: string) => (value ? format(new Date(value), 'PPP') : 'N/A'),
+    },
+    { header: 'Wallet Address', accessor: 'walletAddress' },
   ];
 
   return (
     <div className="mt-4">
-      <Table
-        data={attendees}
-        columns={columns}
-        emptyMessage="No users registered yet"
-      />
+      <Table data={attendees} columns={columns} emptyMessage="No users registered yet" />
     </div>
   );
 };

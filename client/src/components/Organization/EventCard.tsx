@@ -1,64 +1,92 @@
 import React from 'react';
-import { PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { Calendar, MapPin, Clock, Edit, Cross, Delete, X } from 'lucide-react';
 import { Event } from '../../types/event';
-import { EventStatus } from './EventStatus';
-import { EventCapacity } from './EventCapacity';
-import { formatDate } from '../../utils/date';
-import { Button } from '../ui/Button';
 
 interface EventCardProps {
     event: Event;
     onEdit: (event: Event) => void;
     onCancel: (eventId: string) => void;
     onViewAttendees: (event: Event) => void;
+    onDelete: (eventId: string) => void;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({
-    event,
-    onEdit,
-    onCancel,
-    onViewAttendees,
-}) => {
+const EventCard = ({ event, onEdit, onCancel, onViewAttendees, onDelete }: EventCardProps) => {
+    const formatDate = (date: Date | string) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    };
+
+    const formatTime = (date: Date | string) => {
+        return new Date(date).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
     return (
-        <div className="bg-zinc-800 rounded-lg shadow-xl p-6 hover:shadow-zinc-700/20 transition-shadow border border-zinc-700">
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="text-xl font-semibold text-zinc-100">{event.title}</h3>
-                    <p className="text-zinc-400 mt-1">{formatDate(event.date)}</p>
-                </div>
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => onEdit(event)}
-                        className="p-2 text-zinc-400 hover:text-blue-400 rounded-full hover:bg-zinc-700"
-                    >
-                        <PencilIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={() => onCancel(event.id)}
-                        className="p-2 text-zinc-400 hover:text-red-400 rounded-full hover:bg-zinc-700"
-                    >
-                        <TrashIcon className="w-5 h-5" />
-                    </button>
-                </div>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div className="h-48 overflow-hidden">
+                <img
+                    src={event.imageUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                />
             </div>
+            <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{event.title}</h3>
+                <p className="text-gray-600 mb-4">{event.description}</p>
 
-            <EventCapacity
-                attendeeCount={event.tickets.total - event.tickets.available}
-                capacity={event.tickets.total}
-            />
+                <div className="space-y-2">
+                    <div className="flex items-center text-gray-600">
+                        <Calendar className="w-5 h-5 mr-2" />
+                        <span>{formatDate(event.date)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                        <Clock className="w-5 h-5 mr-2" />
+                        <span>{formatTime(event.date)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                        <MapPin className="w-5 h-5 mr-2" />
+                        <span>{event.location}</span>
+                    </div>
+                </div>
 
-            <div className="mt-4 space-y-4">
-                <EventStatus status={event.status} />
+                <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                    <button
+                        className="text-sm text-blue-500 hover:underline"
+                        onClick={() => onViewAttendees(event)}
+                    >
+                        View Attendees
+                    </button>
+                    <div className="space-x-2">
+                        <button
+                            className="text-sm text-yellow-500 hover:underline"
+                            onClick={() => onEdit(event)}
+                        >
+                            <Edit />
+                        </button>
+                        <button
+                            className="text-sm text-red-500 hover:underline"
+                            onClick={() => onCancel(event._id)}
+                        >
+                            <X />
+                        </button>
 
-                <Button
-                    variant="secondary"
-                    onClick={() => onViewAttendees(event)}
-                    className="w-full flex items-center justify-center space-x-2"
-                >
-                    <UserGroupIcon className="w-5 h-5" />
-                    <span>View Attendees</span>
-                </Button>
+                        <button
+                            className="text-sm text-gray-500 hover:underline"
+                            onClick={() => onDelete(event._id)} // Delete Button
+                        >
+                            <Delete />
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
+
+export default EventCard;

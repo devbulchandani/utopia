@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 
 interface CountdownTimerProps {
-    targetDate: string;
+    targetDate: Date;
 }
 
 interface TimeLeft {

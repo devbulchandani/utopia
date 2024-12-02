@@ -145,17 +145,6 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, isLive }) => {
                     </button>
                 </div>
 
-                {isExpanded && (
-                    <div className="mt-4 pt-4 border-t border-zinc-700/50 text-sm text-zinc-400">
-                        <p>Registered on {new Date(event.registeredAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}</p>
-                    </div>
-                )}
             </div>
         </div>
     );

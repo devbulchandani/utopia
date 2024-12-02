@@ -8,7 +8,7 @@ export interface Attendee {
 }
 
 export interface Event {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   date: Date;
@@ -18,7 +18,7 @@ export interface Event {
   category: string;
   tickets: {
     available: number;
-    total: number;
+    total: number ;
   };
   organizer: {
     name: string;

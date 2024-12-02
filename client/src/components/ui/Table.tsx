@@ -1,24 +1,20 @@
 import React from 'react';
 
-interface Column {
+interface Column<T = any> {
     header: string;
     accessor: string;
-    cell?: (value: any) => React.ReactNode;
+    cell?: (value: any, row: T) => React.ReactNode;
 }
 
-interface TableProps {
-    data: any[];
-    columns: Column[];
+interface TableProps<T = any> {
+    data: T[];
+    columns: Column<T>[];
     emptyMessage?: string;
 }
 
 export const Table: React.FC<TableProps> = ({ data, columns, emptyMessage = 'No data available' }) => {
     if (data.length === 0) {
-        return (
-            <div className="text-center py-8 text-zinc-400">
-                {emptyMessage}
-            </div>
-        );
+        return <div className="text-center py-8 text-zinc-400">{emptyMessage}</div>;
     }
 
     return (
@@ -40,13 +36,8 @@ export const Table: React.FC<TableProps> = ({ data, columns, emptyMessage = 'No 
                     {data.map((row, rowIndex) => (
                         <tr key={rowIndex} className="hover:bg-zinc-700/50 transition-colors">
                             {columns.map((column) => (
-                                <td
-                                    key={column.accessor}
-                                    className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300"
-                                >
-                                    {column.cell
-                                        ? column.cell(row[column.accessor])
-                                        : row[column.accessor]}
+                                <td key={column.accessor} className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
+                                    {column.cell ? column.cell(row[column.accessor], row) : row[column.accessor]}
                                 </td>
                             ))}
                         </tr>
