@@ -135,7 +135,7 @@ npm run dev
 
 ## License
 
-[Specify your license, e.g., MIT License]
+[MIT License]
 
 ## Contact
 
