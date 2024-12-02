@@ -59,7 +59,16 @@ PINATA_API_KEY=api_key
 PINATA_JWT=api_key
 REACT_APP_CONTRACT_ADDRESS=api_key
 HUGGINGFACEHUB_API_KEY=api_key
-
+```
+##Set up environment variables
+Create a `.env` file for server with the following:
+```
+MONGO_URI=api_key
+PORT=port
+CLOUDINARY_CLOUD_NAME=api_key
+CLOUDINARY_API_KEY=api_key
+CLOUDINARY_API_SECRET=api_key
+```
 ## Running the Project
 
 ### Development Mode for both client and server.
