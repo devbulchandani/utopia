@@ -1,11 +1,12 @@
 import { HfInference } from "@huggingface/inference";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { Pinecone} from "@pinecone-database/pinecone";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import {v4 as uuidv4} from 'uuid'
 
 dotenv.config();
-const apiKey = process.env.HUGGINGFACE_API_KEY; // Use your Hugging Face API key
+const apiKey = "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"; // Use your Hugging Face API key
 const client = new HfInference(apiKey);
 const app = express();
 app.use(cors());
@@ -13,28 +14,32 @@ app.use(express.json());
 
 // Initialize Pinecone client
 const piKey=process.env.PINECONE_API_KEY;
-console.log(piKey);
-const pc = new Pinecone(piKey);
+
+const pc = new Pinecone( {
+  apiKey: "pcsk_28iS1v_RMcjnaVH9k6wb4ssKK8RxBkUsHaQSb13rMQJr8Nm9fwBPzuzLAPps2RcgbqGLwf"
+})
+
 
 
 const indexName = "goutam";
-const model = "multilingual-e5-large"; // Hugging Face embedding model
+var model = "multilingual-e5-large"; // Hugging Face embedding model
 
 // Define the upsert route for new events
 app.post("/upsert", async (req, res) => {
   try {
     const event = req.body; // Assume event data is sent from the frontend
-
+    
     // Generate embeddings for the event (you can use title, description, etc.)
-    const embeddings = await pc.inference.embed({
-      model: model,
-      inputs: [event.title + " " + event.description], // Combine title and description
-    });
+    const embeddings = await pc.inference.embed(
+      model,
+      [event].map((event)=> event.title+" "+event.description),
+      {inputType:"passage",truncate :"END"}// Combine title and description
+    );
 
     // Create a vector to upsert into Pinecone
     const vector = {
-      id: event.id, // Unique event ID
-      values: embeddings[0].embedding, // Embedding vector
+      id: uuidv4(), // Unique event ID
+      values: embeddings[0].values, // Embedding vector
       metadata: {
         title: event.title,
         description: event.description,
@@ -61,19 +66,21 @@ app.post("/upsert", async (req, res) => {
 // Handle user queries with the /chat route
 app.post("/chat", async (req, res) => {
   try {
-    const userQuery = req.body.query; // Frontend sends user query
-
+    const userQuery = req.body.query // Frontend sends user query
+    console.log(userQuery)
+    var model="multilingual-e5-large"
     // Convert the query into a numerical vector
-    const queryEmbedding = await pc.inference.embed({
-      model: model,
-      inputs: [userQuery],
-    });
-
+    const queryEmbedding = await pc.inference.embed(
+      model,
+      [userQuery],
+      {inputType:'query'}
+  );
+    console.log(queryEmbedding);
     // Search the Pinecone index for top matches
     const index = pc.index(indexName);
     const queryResponse = await index.namespace("utopia-bot").query({
-      topK: 3,
-      vector: queryEmbedding[0].embedding, // Query embedding
+      topK: 1,
+      vector: queryEmbedding[0].values, // Query embedding
       includeValues: false,
       includeMetadata: true,
     });

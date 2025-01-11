@@ -181,7 +181,7 @@ export default function CreateEvent() {
       toast.error("Speech recognition is not supported in your browsers.");
     }
     const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.lang = "hi-IN";
+    recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.continuous = false;
 
@@ -222,8 +222,8 @@ export default function CreateEvent() {
       const chatCompletion = await client.chatCompletion({
         model: "meta-llama/Llama-3.2-3B-Instruct",
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 1500,
-        temperature: 0.6,
+        max_tokens: 2000,
+        temperature: 0.65,
       });
 
       const output = String(chatCompletion.choices[0].message.content);
