@@ -1,3 +1,5 @@
+export const moduleAddress="0x903a8c9e37c744674108ea208c81e60ff09d78c612ffa9df78396e99634f8204";
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar.tsx";

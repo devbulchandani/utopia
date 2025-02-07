@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/clerk-react";
-import WalletConnectButton  from "./ConnectWallet.tsx";
+import AptosConnect  from "./ConnectWallet.tsx";
 
 export const Navbar = () => {
   const { isSignedIn, userId } = useAuth();
@@ -106,7 +106,7 @@ export const Navbar = () => {
             Sign In
           </Link>
         </SignedOut>
-        <WalletConnectButton />
+        <AptosConnect />
 
       </div>
     </motion.nav>
